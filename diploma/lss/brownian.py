@@ -13,6 +13,7 @@ class BrownianMotionSimulation(BaseModel):
     @staticmethod
     def brownian_motion(num_steps) -> NDArray:
         """
+            W_i = W_{i-1} + N(0,1)
         :return W: Вектор броуновского движения
         """
         W = np.zeros(num_steps)  # W[0] всегда == 0
@@ -26,21 +27,19 @@ class BrownianMotionSimulation(BaseModel):
 
     def _simulate_path(self, W_t) -> NDArray:
         """
+            S_t = S_0 e^{ (r - \frac{\sigma^2}{2}) t  + \sigma \sqrt{t} W_t}
         :param W_t: Вектор броуновского движения.
         :return: Монте-Карло выборку для использования в дальнейшем
         """
-        denominator = 256
-        S = np.zeros(W_t.shape[0])
-        S[0] = self.S_0
-        t = np.arange(0, W_t.shape[0])
+        dt = 1 / 365
+        t = np.arange(1, len(W_t) + 1)/365
+
+        volatility = self.volatility / 100
+        risk_free_rate = self.risk_free_rate / 100
 
         path = self.S_0 * np.exp(
-            (
-                self.risk_free_rate / denominator
-                - ((self.volatility / np.sqrt(denominator)) ** 2) / 2
-            )
-            * t
-            + (self.volatility / np.sqrt(denominator)) * W_t
+            (risk_free_rate - (volatility ** 2) / 2) * t +
+            volatility * np.sqrt(dt) * W_t
         )
         return path
 

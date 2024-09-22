@@ -131,6 +131,7 @@ class LongStaffSchwartz(BaseModel):
                 X=monte_carlo_i[in_money_indices], y=cash_flow_i[in_money_indices]
             )
 
+
             self.models_list = [model_i] + self.models_list
 
             # Считаем цену исполнения сейчас (просто вектор путей в деньгах)
@@ -178,17 +179,12 @@ class LongStaffSchwartz(BaseModel):
         return self.convert_cash_flow_into_decision(self.cash_flow_matrix)
 
     def _american_option_price(self):
-        """
-        :param self.cash_flow_matrix:
-        :param self.risk_free_rate:
-        :return:
-        """
         option_price = 0
 
+        risk_free_rate = self.risk_free_rate/100
+
         for col in range(self.cash_flow_matrix.shape[1]):
-            option_price += np.sum(self.cash_flow_matrix[:, col]) * (
-                1 - self.risk_free_rate / 100
-            ) ** (col + 1)
+            option_price += np.sum(self.cash_flow_matrix[:, col]) * np.exp(-risk_free_rate * col/365)
 
         return option_price / self.cash_flow_matrix.shape[0]
 
@@ -197,12 +193,14 @@ class LongStaffSchwartz(BaseModel):
         :param self.cash_flow_matrix:
         :return:
         """
+        risk_free_rate = self.risk_free_rate / 100
+
         return (
-            np.sum(
-                self.option.path_cash_flow(self.monte_carlo_paths[:, -1], self.strike)
-            )
-            * (1 - self.risk_free_rate / 100) ** (self.monte_carlo_paths.shape[1] - 1)
-            / self.monte_carlo_paths.shape[0]
+                np.sum(
+                    self.option.path_cash_flow(self.monte_carlo_paths[:, -1], self.strike)
+                )
+                * np.exp(- risk_free_rate * (self.monte_carlo_paths.shape[1]) / 365)
+                / self.monte_carlo_paths.shape[0]
         )
 
     def option_price(
@@ -237,8 +235,7 @@ class LongStaffSchwartz(BaseModel):
         confident_interval = []
         for path in self.cash_flow_matrix:
             confident_interval.append(
-                np.amax(path)
-                * ((1 - self.risk_free_rate / 100) ** (np.argmax(path) + 1))
+                np.amax(path) * np.exp(- self.risk_free_rate/100 * np.argmax(path) + 1)
             )
 
         return (
@@ -288,10 +285,10 @@ class OutOfSample(BaseModel):
     def _american_option_price(self):
         option_price = 0
 
+        risk_free_rate = self.risk_free_rate/100
+
         for col in range(self.cash_flow_matrix.shape[1]):
-            option_price += np.sum(self.cash_flow_matrix[:, col]) * (
-                1 - self.risk_free_rate / 100
-            ) ** (col + 1)
+            option_price += np.sum(self.cash_flow_matrix[:, col]) * np.exp(- risk_free_rate * col/365)
 
         return option_price / self.cash_flow_matrix.shape[0]
 
@@ -300,12 +297,14 @@ class OutOfSample(BaseModel):
         :param self.cash_flow_matrix:
         :return:
         """
+        risk_free_rate = self.risk_free_rate / 100
+
         return (
-            np.sum(
-                self.option.path_cash_flow(self.monte_carlo_paths[:, -1], self.strike)
-            )
-            * (1 - self.risk_free_rate / 100) ** (self.monte_carlo_paths.shape[1] - 1)
-            / self.monte_carlo_paths.shape[0]
+                np.sum(
+                    self.option.path_cash_flow(self.monte_carlo_paths[:, -1], self.strike)
+                )
+                * np.exp(- risk_free_rate * (self.monte_carlo_paths.shape[1]) / 365)
+                / self.monte_carlo_paths.shape[0]
         )
 
     def evaluate(self, verbose: bool = False):
