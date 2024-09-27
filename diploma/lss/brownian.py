@@ -1,14 +1,14 @@
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 
 class BrownianMotionSimulation(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    S_0: float = Field(default=1, gt=0)
-    risk_free_rate: float = Field(default=5.8239, gt=0)
-    volatility: float = Field(default=3, gt=0)
+    S_0: float
+    risk_free_rate: float
+    volatility: float
 
     @staticmethod
     def brownian_motion(num_steps) -> NDArray:
@@ -65,3 +65,4 @@ class BrownianMotionSimulation(BaseModel):
             simulations[-1] = self._simulate_path(brownian)
 
         return simulations
+
