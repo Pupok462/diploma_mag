@@ -23,7 +23,9 @@ class FindHedge:
         N = norm.cdf
         T = option.expiration_time / option.expiration_time_denominator
 
-        d1 = (np.log(S / option.strike) + (option.risk_free_rate + sigma ** 2 / 2) * T) / (sigma * np.sqrt(T))
+        d1 = (
+            np.log(S / option.strike) + (option.risk_free_rate + sigma**2 / 2) * T
+        ) / (sigma * np.sqrt(T))
         d2 = d1 - sigma * np.sqrt(T)
 
         return option.strike * np.exp(-option.risk_free_rate * T) * N(-d2) - S * N(-d1)
@@ -39,17 +41,18 @@ class FindHedge:
         )
         return monte_carlo_simulations
 
-    def _find_american_option_price(self, volatility: float, num_simulations: int, simulations=None):
-
+    def _find_american_option_price(
+        self, volatility: float, num_simulations: int, simulations=None
+    ):
         if simulations is None:
             simulations = self.simulate_paths(volatility, num_simulations)
 
-        naive_model = NaiveModel(risk_free_rate=self.option.risk_free_rate*100)
+        naive_model = NaiveModel(risk_free_rate=self.option.risk_free_rate * 100)
 
         option_model = PutOption()
 
         lss_model = LongStaffSchwartz(
-            risk_free_rate=self.option.risk_free_rate*100,
+            risk_free_rate=self.option.risk_free_rate * 100,
             option=option_model,
             strike=self.option.strike,
             monte_carlo_paths=simulations,
@@ -57,8 +60,9 @@ class FindHedge:
         )
         _, lss_option_price = lss_model.evaluate(verbose=False)
 
-        if len(list(lss_model.models_list)) == 0 or sum(list(lss_model.models_list)) == len(
-                list(lss_model.models_list)):
+        if len(list(lss_model.models_list)) == 0 or sum(
+            list(lss_model.models_list)
+        ) == len(list(lss_model.models_list)):
             model = []
         else:
             model = list(lss_model.models_list)[0]
@@ -96,7 +100,14 @@ class FindHedge:
 
         return hedge_now
 
-    def run(self, step_num: int, hedge_prev: float = None, delta_prev: float = None, num_simulations: int = 10, eps=1e-4):
+    def run(
+        self,
+        step_num: int,
+        hedge_prev: float = None,
+        delta_prev: float = None,
+        num_simulations: int = 10,
+        eps=1e-4,
+    ):
         """
             Функция поиска хеджа
 
@@ -163,7 +174,6 @@ class FindHedge:
         )
         # find delta
         delta_now = (AP_price_b - AP_price_l) / (2 * eps)
-
 
         # if self.option.expiration_time <= 2:
         #     p_eps_p = self._bs_put(self.option, implied_volatility, self.option.spot_price + eps)

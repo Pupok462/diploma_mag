@@ -161,5 +161,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 !/diploma/notebooks/
-diploma/Longstaffshcwartz.ipynb!/papers/
-!/papers/
+diploma/Longstaffshcwartz.ipynb
+papers/Shreve_S.E._Stochastic_Calculus_for_Finance_1_(2004)(en)(250s).pdf
+papers/куликов книжка.pdf
+papers/Опционы, фьючерсы и другие деревативы. Джон Кхолл.pdf
+papers/2_sem_pres.key
+.DS_Store

@@ -5,6 +5,7 @@ from lss.option.put_option import PutOption
 from lss.option.meta_option import MetaOption
 from numpy.typing import NDArray
 
+
 class OptionPriceCounter(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     option: MetaOption = Field(default=PutOption())
@@ -16,10 +17,12 @@ class OptionPriceCounter(BaseModel):
 
     def _american_option_price(self) -> float:
         option_price = 0
-        risk_free_rate = self.risk_free_rate/100
+        risk_free_rate = self.risk_free_rate / 100
 
         for col in range(self.cash_flow_matrix.shape[1] - 1):
-            option_price += np.sum(self.cash_flow_matrix[:, col]) * np.exp(-risk_free_rate * col/365)
+            option_price += np.sum(self.cash_flow_matrix[:, col]) * np.exp(
+                -risk_free_rate * col / 365
+            )
 
         return option_price / self.cash_flow_matrix.shape[0]
 
@@ -27,9 +30,11 @@ class OptionPriceCounter(BaseModel):
         risk_free_rate = self.risk_free_rate / 100
 
         return (
-                np.sum(self.option.path_cash_flow(self.monte_carlo_paths[:, -1], self.strike)) *
-                np.exp(- risk_free_rate * (self.monte_carlo_paths.shape[1] - 1) / 365)
-                / self.monte_carlo_paths.shape[0]
+            np.sum(
+                self.option.path_cash_flow(self.monte_carlo_paths[:, -1], self.strike)
+            )
+            * np.exp(-risk_free_rate * (self.monte_carlo_paths.shape[1] - 1) / 365)
+            / self.monte_carlo_paths.shape[0]
         )
 
     def count_option_prices(self):

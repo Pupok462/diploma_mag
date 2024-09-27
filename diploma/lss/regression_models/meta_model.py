@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class MetaModel(BaseModel):
     risk_free_rate: float
 

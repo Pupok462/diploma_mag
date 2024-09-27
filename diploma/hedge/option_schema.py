@@ -9,7 +9,9 @@ class OptionSchema(BaseModel):
         alias="id",
     )
     spot_price: float = Field(description="Цена базового актива cейчас", alias="S")
-    spot_price_prev: float = Field(description="Цена базового актива на прошлом шаге", alias="S_prev")
+    spot_price_prev: float = Field(
+        description="Цена базового актива на прошлом шаге", alias="S_prev"
+    )
     strike: float = Field(description="Страйк цена", alias="K", default=None)
     option_price: float = Field(description="Цена опциона Close", alias="price")
     expiration_time: float = Field(

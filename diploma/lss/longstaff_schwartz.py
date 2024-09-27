@@ -29,7 +29,9 @@ class LongStaffSchwartz(BaseModel):
         """
         :return: Матрица 1 и 0 обозначающая остановки и продолжения
         """
-        assert self.cash_flow_matrix.size != 0, "Матрица денежных потоков пустая, запустите сначала метод evolute()"
+        assert (
+            self.cash_flow_matrix.size != 0
+        ), "Матрица денежных потоков пустая, запустите сначала метод evolute()"
         return np.where(self.cash_flow_matrix > 0, 1, 0)
 
     @staticmethod
@@ -59,7 +61,6 @@ class LongStaffSchwartz(BaseModel):
 
         return cash_flow_matrix
 
-
     def evaluate(self, verbose: bool = False) -> NoReturn:
         """
             Запуск алгоритма LongStaffSchwartz
@@ -69,7 +70,9 @@ class LongStaffSchwartz(BaseModel):
 
         # Инициализация матрицы денежных потоков (полностью нули)
         # Столбцов на 1 меньше чем в МК симуляциях, так как мы не учитываем S_0 цену
-        cash_flow_matrix = np.zeros((self.monte_carlo_paths.shape[0], self.monte_carlo_paths.shape[1] - 1)) #TODO: APPROVED
+        cash_flow_matrix = np.zeros(
+            (self.monte_carlo_paths.shape[0], self.monte_carlo_paths.shape[1] - 1)
+        )  # TODO: APPROVED
 
         if verbose:
             print("----- INITIAL CASH FLOW MATRIX -----")
@@ -78,7 +81,7 @@ class LongStaffSchwartz(BaseModel):
 
         # Запишем денежные потоки на последнем шаге в последний столбец матрицы cash_flow_matrix
         cash_flow_matrix[:, -1] = self.option.path_cash_flow(
-            self.monte_carlo_paths[:, -1].copy(), self.strike #TODO: APPROVED
+            self.monte_carlo_paths[:, -1].copy(), self.strike  # TODO: APPROVED
         )
 
         if verbose:
@@ -91,22 +94,23 @@ class LongStaffSchwartz(BaseModel):
         # ---------------------------------------------------------------------------------
 
         # Итерируемся в обратном порядке для подсчета цены продолжения и исполнения
-        for i in range(cash_flow_matrix.shape[1] - 1, 0, -1): #TODO: APPROVED
-
+        for i in range(cash_flow_matrix.shape[1] - 1, 0, -1):  # TODO: APPROVED
             # Берем часть матрицы денежных потоков на i и больше
             cash_flow_i = cash_flow_matrix[:, i:]
             # И берем цены базового актива на шаге i
-            monte_carlo_i = self.monte_carlo_paths[:, i] #TODO: APPROVED
+            monte_carlo_i = self.monte_carlo_paths[:, i]  # TODO: APPROVED
 
             # Записываем индексы путей которые в деньгах в зависимости от типа опциона
-            in_money_mask = self.option.path_mask(monte_carlo_i, self.strike) #TODO: APPROVED
-            in_money_indices = np.where(in_money_mask)[0] #TODO: APPROVED
+            in_money_mask = self.option.path_mask(
+                monte_carlo_i, self.strike
+            )  # TODO: APPROVED
+            in_money_indices = np.where(in_money_mask)[0]  # TODO: APPROVED
 
             # Вычисляем вектор продолжения регрессируя и вектор исполнения (денежный поток в момент времени i)
             continuation, model_i = self.model.predict(
-                X=monte_carlo_i[in_money_indices], y=cash_flow_i[in_money_indices] #TODO: APPROVED
+                X=monte_carlo_i[in_money_indices],
+                y=cash_flow_i[in_money_indices],  # TODO: APPROVED
             )
-
 
             self.models_list = [model_i] + self.models_list
 
@@ -153,7 +157,7 @@ class LongStaffSchwartz(BaseModel):
             risk_free_rate=self.risk_free_rate,
             cash_flow_matrix=self.cash_flow_matrix.copy(),
             monte_carlo_paths=self.monte_carlo_paths.copy(),
-            strike=self.strike
+            strike=self.strike,
         ).count_option_prices()
         # -------------------------------------------------------------------------------
 
@@ -172,7 +176,7 @@ class LongStaffSchwartz(BaseModel):
         # TODO: WHY ISNT DISCOUNTING???
         for path in self.cash_flow_matrix:
             confident_interval.append(
-                np.amax(path) * np.exp(- self.risk_free_rate/100 * np.argmax(path) + 1)
+                np.amax(path) * np.exp(-self.risk_free_rate / 100 * np.argmax(path) + 1)
             )
 
         # TODO: WTF IS COEF 1.645???
@@ -180,4 +184,3 @@ class LongStaffSchwartz(BaseModel):
             np.std(np.array(confident_interval))
             / np.sqrt(self.cash_flow_matrix.shape[0])
         ) * 1.645
-

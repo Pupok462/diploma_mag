@@ -25,25 +25,30 @@ def show_simulations(simulations):
 
 def show_eval_of_option_price(data: pd.DataFrame, option_id: str = None):
     if option_id is None:
-        option_ids = data['id'].unique()
+        option_ids = data["id"].unique()
         option_id = option_ids[random.randint(0, len(option_ids))]
 
-    current_option = data[data['id'] == option_id].sort_values(by=["dttm"]).to_dict('records')
+    current_option = (
+        data[data["id"] == option_id].sort_values(by=["dttm"]).to_dict("records")
+    )
 
     sample_data = [
         {
-            "dttm": datetime.strptime(c_o['dttm'].split(" ")[0], "%Y-%m-%d").date(),
-            "option": OptionSchema.model_validate(c_o)
-        } for c_o in current_option
+            "dttm": datetime.strptime(c_o["dttm"].split(" ")[0], "%Y-%m-%d").date(),
+            "option": OptionSchema.model_validate(c_o),
+        }
+        for c_o in current_option
     ]
 
-    x = [el['dttm'] for el in sample_data]
-    y = [el['option'].option_price for el in sample_data]
+    x = [el["dttm"] for el in sample_data]
+    y = [el["option"].option_price for el in sample_data]
 
     upper = []
     lower = []
-    for opt in [el['option'] for el in sample_data]:
-        disc_strike = opt.strike * np.exp(-opt.expiration_time/opt.expiration_time_denominator * opt.risk_free_rate)
+    for opt in [el["option"] for el in sample_data]:
+        disc_strike = opt.strike * np.exp(
+            -opt.expiration_time / opt.expiration_time_denominator * opt.risk_free_rate
+        )
         if opt.optionType == "CALL":
             lower.append(max(opt.spot_price - disc_strike, 0))
             upper.append(opt.spot_price)
@@ -51,11 +56,27 @@ def show_eval_of_option_price(data: pd.DataFrame, option_id: str = None):
             lower.append(max(disc_strike - opt.spot_price, 0))
             upper.append(disc_strike)
 
-    spot_price = [el['option'].spot_price for el in sample_data]
+    spot_price = [el["option"].spot_price for el in sample_data]
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=x, y=lower, fill='tonexty', fillcolor='rgba(0, 100, 80, 0.2)', name='Lower Fair Price'))
-    fig.add_trace(go.Scatter(x=x, y=upper, fill='tonexty', fillcolor='rgba(0, 100, 80, 0.2)', name="Upper Fair Price"))
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=lower,
+            fill="tonexty",
+            fillcolor="rgba(0, 100, 80, 0.2)",
+            name="Lower Fair Price",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=upper,
+            fill="tonexty",
+            fillcolor="rgba(0, 100, 80, 0.2)",
+            name="Upper Fair Price",
+        )
+    )
     fig.add_trace(go.Scatter(x=x, y=spot_price, name="Spot Prices"))
     fig.add_trace(go.Scatter(x=x, y=y, name="Option Prices"))
     fig.update_layout(title=str(option_id))

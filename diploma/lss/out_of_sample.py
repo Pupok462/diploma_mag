@@ -35,7 +35,6 @@ class OutOfSample(BaseModel):
             np.where(continuation > exercise)[0],
         )
 
-
     def evaluate(self, verbose: bool = False) -> NoReturn:
         # Инициализируем пути Монте-Карло и матрицу остановок
         out_of_sample_paths = self.monte_carlo_paths.copy()
@@ -94,6 +93,6 @@ class OutOfSample(BaseModel):
             risk_free_rate=self.risk_free_rate,
             cash_flow_matrix=self.cash_flow_matrix.copy(),
             monte_carlo_paths=self.monte_carlo_paths.copy(),
-            strike=self.strike
+            strike=self.strike,
         ).count_option_prices()
         # -------------------------------------------------------------------------------

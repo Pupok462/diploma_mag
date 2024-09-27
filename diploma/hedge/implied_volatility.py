@@ -63,7 +63,6 @@ class ImpliedVolatility:
         diff_middle = self.black_scholes(middle) - self.option.option_price
 
         while right - left > tol:
-
             if diff_middle < 0:
                 left = middle
                 middle = (left + right) / 2

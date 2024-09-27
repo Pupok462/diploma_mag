@@ -32,14 +32,14 @@ class BrownianMotionSimulation(BaseModel):
         :return: Монте-Карло выборку для использования в дальнейшем
         """
         dt = 1 / 365
-        t = np.arange(1, len(W_t) + 1)/365
+        t = np.arange(1, len(W_t) + 1) / 365
 
         volatility = self.volatility / 100
         risk_free_rate = self.risk_free_rate / 100
 
         path = self.S_0 * np.exp(
-            (risk_free_rate - (volatility ** 2) / 2) * t +
-            volatility * np.sqrt(dt) * W_t
+            (risk_free_rate - (volatility**2) / 2) * t
+            + volatility * np.sqrt(dt) * W_t
         )
         return path
 
@@ -65,4 +65,3 @@ class BrownianMotionSimulation(BaseModel):
             simulations[-1] = self._simulate_path(brownian)
 
         return simulations
-
