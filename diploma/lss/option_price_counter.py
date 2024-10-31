@@ -19,7 +19,7 @@ class OptionPriceCounter(BaseModel):
         option_price = 0
         risk_free_rate = self.risk_free_rate / 100
 
-        for col in range(self.cash_flow_matrix.shape[1] - 1):
+        for col in range(self.cash_flow_matrix.shape[1]):
             option_price += np.sum(self.cash_flow_matrix[:, col]) * np.exp(
                 -risk_free_rate * (col + 1) / 365
             )
